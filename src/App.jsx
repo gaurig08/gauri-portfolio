@@ -123,29 +123,10 @@ function ThemeButton({ theme, onClick }) {
 
 // the name "decodes" from random characters on load
 function Name({ first, last }) {
-  const ref = useRef(null)
-  useEffect(() => {
-    if (reduce) return
-    const glyphs = '01<>/{}[]=+*#$%&_', timers = []
-    ref.current.querySelectorAll('.part').forEach((part, pi) => {
-      part.querySelectorAll('.ch').forEach((s, i) => {
-        const final = s.textContent
-        let n = 0
-        const step = () => {
-          if (n++ < 7) { s.textContent = glyphs[Math.floor(Math.random() * glyphs.length)]; timers.push(setTimeout(step, 45)) }
-          else s.textContent = final
-        }
-        timers.push(setTimeout(step, 250 + pi * 220 + i * 55))
-      })
-    })
-    const spans = ref.current.querySelectorAll('.ch')
-    return () => { timers.forEach(clearTimeout); spans.forEach((s) => { s.textContent = s.dataset.c }) }
-  }, [])
-  const letters = (word) => word.split('').map((c, i) => <span className="ch" data-c={c} key={i}>{c}</span>)
   return (
-    <h1 ref={ref} aria-label={`${first} ${last}`}>
-      <span className="part" aria-hidden="true">{letters(first)}</span>{' '}
-      <span className="part em" aria-hidden="true">{letters(last)}</span>
+    <h1>
+      <span>{first}</span>{' '}
+      <span className="em">{last}</span>
     </h1>
   )
 }
