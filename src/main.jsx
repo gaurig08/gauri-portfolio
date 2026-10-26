@@ -2,7 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.jsx'
 
-// fonts are bundled with the site (no Google Fonts request)
+
 import '@fontsource/shantell-sans/latin-600.css'
 import '@fontsource/shantell-sans/latin-600-italic.css'
 import '@fontsource/shantell-sans/latin-700.css'

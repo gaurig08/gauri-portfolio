@@ -1,4 +1,4 @@
-// Everything you'd want to edit lives here: links, projects, skills, certifications.
+
 
 export const links = {
   email: 'gaurigohad8@gmail.com',

@@ -1,6 +1,4 @@
-// Draws the dragon onto a <canvas>. Written for this portfolio, no libraries.
-// Each body part is a layer with SVG paths; layers are moved by keyframes (eased like CSS
-// cubic-bezier), stacked through their parents with 4x4 matrices, then flattened to 2D.
+
 import DRAGON from './dragonData.js'
 
 // cubic-bezier easing, the same curve CSS uses: control points (x1,y1) (x2,y2)

@@ -1,5 +1,4 @@
-// Full-window background: sakura petals drift down by day (they dodge the cursor),
-// stars twinkle by night with a little parallax and the occasional shooting star.
+
 import { isDark } from './util.js'
 
 export function startSky(canvas, reduce) {

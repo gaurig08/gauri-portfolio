@@ -1,6 +1,4 @@
-// The hero skyline: a magic city with castles, a pointed tower, neon and lit windows.
-// Same building shapes by day and by night; at night the sky turns dark, a crescent moon
-// appears and more windows light up. Drawn once into an offscreen canvas, then animated on top.
+
 import { isDark, seeded } from './util.js'
 
 export function startCity(canvas, hero, reduce) {

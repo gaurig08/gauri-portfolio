@@ -1,4 +1,4 @@
-// Shared helpers for the background scenes.
+
 
 export function isDark() {
   const t = document.documentElement.dataset.theme
@@ -9,7 +9,7 @@ export function prefersReducedMotion() {
   return matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
-// Small seeded random generator, so the skyline keeps the same shapes when it is redrawn.
+
 export function seeded(seed) {
   let s = seed | 0
   const next = () => {

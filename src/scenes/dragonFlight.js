@@ -1,5 +1,4 @@
-// The dragon circles the window at an even pace: left along the bottom, right along the top,
-// turning around in 3D at each end. It stays on screen while you scroll and flies behind the content.
+
 import { createDragon } from './dragonPlayer.js'
 
 export function startDragon(canvas) {
