@@ -2,26 +2,27 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Gauri Gohad</title>
-    <meta name="description" content="Gauri Gohad (GG) — 4th-year B.Tech CSE (Big Data Analytics) student at SRMIST who builds data pipelines, full-stack apps and ML models. Open to internships and full-time roles." />
+    <meta name="description" content="Gauri Gohad: 4th-year B.Tech CSE (Big Data Analytics) student at SRMIST. Data pipelines, web apps and machine learning projects." />
     <meta name="author" content="Gauri Gohad" />
     <meta property="og:title" content="Gauri Gohad · Portfolio" />
-    <meta property="og:description" content="A manga about a CS student who builds things. Story arcs, a live pipeline, and a résumé you can query with SQL." />
-    <meta property="og:image" content="https://gaurig-portfolio.vercel.app/profile.png" />
+    <meta property="og:description" content="4th-year CSE student at SRMIST. Projects in data pipelines, web apps and machine learning." />
+    <meta property="og:image" content="https://gaurig-portfolio.vercel.app/og.png" />
     <meta property="og:type" content="website" />
-    <meta name="twitter:card" content="summary" />
-    <meta name="theme-color" content="#a66bff" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#7a52f4" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="alternate icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <script>
-      try { var t = localStorage.getItem("gg-theme"); if (t) document.documentElement.dataset.theme = t; else if (matchMedia("(prefers-color-scheme: dark)").matches) document.documentElement.dataset.theme = "dark"; } catch (e) {}
+      // pick day or night before the page paints, so it never flashes the wrong theme
+      try { var t = localStorage.getItem('gg-theme'); document.documentElement.dataset.theme = t || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); } catch (e) {}
     </script>
   </head>
   <body>
     <div id="root"></div>
-    <noscript>Gauri Gohad — portfolio. Please enable JavaScript. Email: gaurigohad8@gmail.com</noscript>
+    <noscript>Gauri Gohad, portfolio. Please enable JavaScript. Email: gaurigohad8@gmail.com</noscript>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
