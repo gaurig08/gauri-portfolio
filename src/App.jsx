@@ -1,366 +1,230 @@
-import React, { useState, useEffect } from "react";
-import {
-  Terminal,
-  Github,
-  Linkedin,
-  Mail,
-  ExternalLink,
-  ChevronRight,
-} from "lucide-react";
+import { useEffect, useRef, useState } from 'react'
+import { links, intro, featured, projects, skills, certifications } from './data.js'
+import { startCity } from './scenes/city.js'
+import { startSky } from './scenes/sky.js'
+import { startDragon } from './scenes/dragonFlight.js'
+import { prefersReducedMotion } from './scenes/util.js'
+
+const reduce = prefersReducedMotion()
+
+function currentTheme() {
+  const t = document.documentElement.dataset.theme
+  if (t) return t
+  return matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+}
 
 export default function App() {
-  const [text, setText] = useState("");
-  const [cursor, setCursor] = useState(true);
+  const [theme, setTheme] = useState(currentTheme)
+  const heroRef = useRef(null), cityRef = useRef(null), skyRef = useRef(null), dragonRef = useRef(null)
+  const scenes = useRef({})
 
-  const fullText =
-    "> importing imagination...\n" +
-    "> aligning pixels & logic\n" +
-    "> compiling ideas into interfaces\n" +
-    "> creative_engine: online ✨";
-
+  // background scenes: start once, stop on unmount
   useEffect(() => {
-    let i = 0;
-    const timer = setInterval(() => {
-      if (i < fullText.length) {
-        setText(fullText.slice(0, i + 1));
-        i++;
-      } else clearInterval(timer);
-    }, 35);
-    return () => clearInterval(timer);
-  }, []);
+    const city = startCity(cityRef.current, heroRef.current, reduce)
+    const sky = startSky(skyRef.current, reduce)
+    const dragon = reduce ? () => {} : startDragon(dragonRef.current)
+    scenes.current = { city, sky }
+    return () => { city(); sky(); dragon() }
+  }, [])
 
-  useEffect(() => {
-    const c = setInterval(() => setCursor((p) => !p), 500);
-    return () => clearInterval(c);
-  }, []);
+  function toggleTheme() {
+    const next = theme === 'dark' ? 'light' : 'dark'
+    document.documentElement.dataset.theme = next
+    try { localStorage.setItem('gg-theme', next) } catch { /* private mode: just don't remember */ }
+    setTheme(next)
+    scenes.current.city?.redraw(); scenes.current.sky?.redraw()
+  }
+
+  useReveal()
 
   return (
-    <div className="min-h-screen bg-[#0f0f14] text-[#eaeaf0] px-4 sm:px-6 py-10">
-      <div className="max-w-6xl mx-auto space-y-14 md:space-y-24">
+    <>
+      <canvas className="city" ref={cityRef} aria-hidden="true" />
+      <canvas className="sky" ref={skyRef} aria-hidden="true" />
+      <canvas className="dragon" ref={dragonRef} aria-hidden="true" />
 
-        {/* HERO */}
-        <section className="text-center animate-slideUp">
-          <div className="flex justify-center mb-6">
-            <div className="relative">
-              <div className="w-28 h-28 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-2 border-purple-400/50 shadow-[0_0_30px_rgba(192,132,252,0.35)]">
-                <img
-                  src="/profile.png"
-                  alt="Avatar"
-                  className="w-full h-full object-cover"
-                />
+      <div className="wrap">
+        <a className="skip" href="#work">Skip to projects</a>
+        <header className="top">
+          <a className="logo" href="#top" aria-label="Gauri Gohad, back to top"><span className="logo-box">GG</span></a>
+          <nav aria-label="Main">
+            <a href="#work">Projects</a>
+            <a className="hide-sm" href="#skills">Skills</a>
+            <a href="#contact">Contact</a>
+            <ThemeButton theme={theme} onClick={toggleTheme} />
+          </nav>
+        </header>
+
+        <main>
+          <section className="hero" id="top" ref={heroRef}>
+            <div>
+              <Name first="Gauri" last="Gohad" />
+              <p className="lede rv" style={{ '--d': '300ms' }}>{intro}</p>
+              <div className="meta rv" style={{ '--d': '450ms' }}>
+                <a className="pill" href={links.github} target="_blank" rel="noreferrer">GitHub ↗</a>
+                <a className="pill" href={links.linkedin} target="_blank" rel="noreferrer">LinkedIn ↗</a>
+                <a className="pill" href="#contact">Say hello</a>
               </div>
-              <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-purple-400/20 to-pink-400/20 pointer-events-none" />
             </div>
-          </div>
+            <div className="avatar rv" style={{ '--d': '200ms' }}>
+              <div className="frame"><img src="profile.webp" alt="Anime-style illustrated portrait of Gauri" width="420" height="420" /></div>
+            </div>
+          </section>
 
-          <h1 className="text-4xl sm:text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-            Gauri Gohad
-          </h1>
+          <section className="sec" id="work">
+            <div className="sec-h rv"><h2>Projects</h2><span className="mono">{String(projects.length + 1).padStart(2, '0')} projects</span></div>
+            <ol className="work">
+              <li className="rv"><Featured p={featured} /></li>
+              {projects.map((p, i) => <li className="rv" key={p.name}><ProjectRow p={p} n={i + 2} /></li>)}
+            </ol>
+          </section>
 
-          <p className="text-purple-300 font-mono mb-3">
-            Final Year B.Tech CSE Student
-          </p>
+          <section className="sec" id="skills">
+            <div className="sec-h rv"><h2>Skills</h2><span className="mono">used in the projects above</span></div>
+            <div className="skills">
+              {skills.map(([title, list], i) => (
+                <div className="sk rv" key={title} style={{ '--d': `${(i % 3) * 60}ms` }}><h4>{title}</h4><p>{list}</p></div>
+              ))}
+            </div>
+            <div className="certs rv">
+              <h4>Certifications</h4>
+              <div className="cert-list">
+                <span className="cert aws"><StarIcon />{certifications.highlight}</span>
+                {certifications.coursera.map((c) => <span className="cert" key={c}><span className="src">Coursera ·</span> {c}</span>)}
+              </div>
+            </div>
+          </section>
 
-          <div className="flex flex-wrap justify-center gap-3 mt-6">
-            {["Python", "SQL", "Java", "React", "Power BI"].map((tag) => (
-              <span
-                key={tag}
-                className="px-4 py-1 rounded-md border border-purple-400/40 bg-purple-400/10 text-purple-300 font-mono text-sm"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
+          <Contact />
+        </main>
 
-          <div className="flex justify-center gap-8 mt-8 text-purple-300">
-            <a href="https://github.com/gaurig08" target="_blank">
-              <Github size={26} />
-            </a>
-            <a href="https://www.linkedin.com/in/gauri-g" target="_blank">
-              <Linkedin size={26} />
-            </a>
-            <a href="mailto:gaurigohad8@gmail.com">
-              <Mail size={26} />
-            </a>
-          </div>
-        </section>
-
-        {/* EDUCATION */}
-        <Section title="Education">
-          <Card>
-            <p className="font-semibold text-lg">
-              SRM Institute of Science and Technology
-            </p>
-            <p className="opacity-80">
-              B.Tech CSE ( Specialization: Big Data Analytics ) · 2023–2027
-            </p>
-            <p className="text-sm text-purple-300 font-mono mt-2">
-              // CGPA: 9.33
-            </p>
-          </Card>
-        </Section>
-
-        {/* SKILLS */}
-        <Section title="Tech Stack">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {[
-              ["Languages", "Java, Python, JavaScript, SQL, HTML5, CSS3"],
-              ["Data & Analytics", "ETL Pipelines, Power BI, Data Warehousing"],
-              ["Databases", "MySQL, MongoDB, Cloud Firestore, PostgreSQL"],
-              ["Cloud & Tools", "AWS, Google Cloud Platform (GCP), Firebase, Git, GitHub, Vercel"],
-              ["Web Development", "React.js, REST APIs, Firebase Authentication"],
-            ].map(([k, v]) => (
-              <Card key={k}>
-                <p className="text-purple-300 font-mono text-sm mb-1">{k}</p>
-                <p className="opacity-80">{v}</p>
-              </Card>
-            ))}
-          </div>
-        </Section>
-
-        {/* PROJECTS */}
-        <Section title="Projects">
-          <div className="space-y-8">
-            <Project
-              title="GeekShelf"
-              tech="React · Firebase · REST · Vercel"
-              link="https://geek-shelf.vercel.app/"
-              git="https://github.com/gaurig08/geek-shelf"
-            >
-              <p className="mt-3 space-y-2 text-white/60 text-sm">
-                Created a full-stack media tracking web app to allow users to track movies, books, and anime with real-time data synchronization and personalized recommendations.
-              </p>
-              <ul className="mt-3 space-y-2 text-white/60 text-sm">
-                <li>• Developed and deployed the app on Vercel with responsive design and transitions</li>
-                <li>• Integrated Firebase Authentication for Google login and real-time Cloud Firestore storage</li>
-                <li>• Connected external APIs (TMDB, Google Books, Jikan) using serverless routes to manage API keys securely</li>
-                <li>• Implemented CRUD operations, genre normalization across APIs, and an AI-powered recommendation engine</li>
-              </ul>
-            </Project>
-
-            <Project
-              title="Amazon Review Sentiment Analysis"
-              tech="Python · pandas · scikit-learn · TF-IDF · SMOTE"
-              git="https://github.com/gaurig08/amazon-review-sentiment-analysis"
-            >
-              <p className="mt-3 space-y-2 text-white/60 text-sm">
-                Built a data analytics pipeline to classify customer sentiment from 20,000+ Amazon reviews, helping identify trends and product issues quickly.
-              </p>
-              <ul className="mt-3 space-y-2 text-white/60 text-sm">
-                <li>• Built an end-to-end sentiment analysis pipeline using Logistic Regression and Random Forest</li>
-                <li>• Performed text preprocessing and TF-IDF feature engineering for feature extraction</li>
-                <li>• Applied SMOTE oversampling, improving minority-class recall by 18%</li>
-                <li>• Evaluated models using precision, recall, and F1-score across both classes</li>
-              </ul>
-            </Project>
-
-            <Project
-              title="Women's Safety Index Analytics Pipeline"
-              tech="Python · pandas · Power BI · ETL"
-              git="https://github.com/gaurig08/women-safety-index-analytics-pipeline"
-            >
-              <p className="mt-3 space-y-2 text-white/60 text-sm">
-                Built an end-to-end ETL pipeline transforming NCRB crime data into a weighted, district-level safety index with interactive visualizations.
-              </p>
-              <ul className="mt-3 space-y-2 text-white/60 text-sm">
-                <li>• Processed 5,300+ crime records across 36 states and 751 districts using a star schema design</li>
-                <li>• Applied severity-based weighting across 9 crime categories with 95th percentile normalization</li>
-                <li>• Built an interactive district-level risk map and Power BI dashboard</li>
-              </ul>
-            </Project>
-
-            <Project
-              title="TV Show Cancellation Analytics Pipeline"
-              tech="Python · SQL · PostgreSQL · Power BI · ETL"
-              git="https://github.com/gaurig08/tv-show-cancellation-analytics"
-            >
-              <p className="mt-3 space-y-2 text-white/60 text-sm">
-                Built an ETL pipeline analyzing 9.5M+ IMDb records to uncover patterns behind TV show cancellations and performance trends.
-              </p>
-              <ul className="mt-3 space-y-2 text-white/60 text-sm">
-                <li>• Designed a PostgreSQL star schema to structure and query large-scale IMDb data efficiently</li>
-                <li>• Built an ETL pipeline to clean, transform, and load 9.5M+ records</li>
-                <li>• Created Power BI dashboards to visualize cancellation trends and rating patterns</li>
-              </ul>
-            </Project>
-
-            <Project
-              title="Face Recognition System"
-              tech="Python · PCA · scikit-learn · SVM · GridSearchCV"
-              git="https://github.com/gaurig08/face-recognition-pca-svm"
-            >
-              <p className="mt-3 space-y-2 text-white/60 text-sm">
-                Developed a machine learning-based face recognition system using the Labeled Faces in the Wild (LFW) dataset for accurate multi-class identification.
-              </p>
-              <ul className="mt-3 space-y-2 text-white/60 text-sm">
-                <li>• Applied PCA to reduce 1,850-dimensional feature vectors to 150 components, retaining 94.5% variance</li>
-                <li>• Optimized an RBF-kernel SVM classifier using GridSearchCV and 5-fold cross-validation</li>
-                <li>• Achieved 85% test accuracy and 0.85 F1-score across 7 classes</li>
-                <li>• Built a robust ML pipeline for real-time recognition tasks</li>
-              </ul>
-            </Project>
-          </div>
-        </Section>
-
-        {/* DSA */}
-        <Section title="Problem Solving">
-          <p className="opacity-70 mb-6">
-            Consistently strengthening algorithmic thinking and data structures.
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <CodingCard
-              title="LeetCode"
-              desc="Interview-focused DSA practice"
-              link="https://leetcode.com/u/gaurig08/"
-            />
-            <CodingCard
-              title="CodeChef"
-              desc="Competitive programming & algorithms"
-              link="https://www.codechef.com/users/gg_08"
-            />
-          </div>
-        </Section>
-
-        {/* Certifications */}
-        <Section title="Certifications">
-          <ul className="space-y-3 text-white/70">
-            <Cert title="AWS Certified Cloud Practitioner" meta="AWS" />
-            <Cert title="Google Data Analytics Professional Certificate" meta="Coursera" />
-            <Cert title="Snowflake Data Engineering Professional Certificate" meta="Coursera" />
-            <Cert title="Introduction to Big Data with Spark & Hadoop" meta="IBM (Coursera)" />
-          </ul>
-        </Section>
-
-        {/* Hackathons */}
-        <Section title="Competitions & Hackathons">
-          <ul className="space-y-3 text-white/70">
-            <li>
-              <span className="text-purple-300">Final Round Participant</span>{" "}
-              — AI/ML Hackathon (PeerHub × CIG IIT Roorkee)
-            </li>
-            <li>
-              <span className="text-purple-300">Participant</span>{" "}
-              — IIT Kharagpur Data Science Hackathon 2025
-            </li>
-            <li>
-              <span className="text-purple-300">Final Round Participant</span>{" "}
-              — Genesis 1.0 Hackathon
-            </li>
-          </ul>
-        </Section>
-
-        {/* FOOTER */}
-        <footer className="text-center text-white/50 pb-10 font-mono text-sm space-y-1">
-          <div>Open to internships</div>
-          <div>Built by Gauri · 2026</div>
+        <footer>
+          <span>deployed on vercel</span>
+          <span>designed &amp; built by gauri · 2026</span>
         </footer>
       </div>
+    </>
+  )
+}
 
-      <style>{`
-        @keyframes scan {
-          0% { transform: translateY(-100%); }
-          100% { transform: translateY(100%); }
+function ThemeButton({ theme, onClick }) {
+  return (
+    <button className="theme" type="button" onClick={onClick} aria-label={theme === 'dark' ? 'Switch to day' : 'Switch to night'}>
+      <svg className="sun" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="4.2" fill="currentColor" />
+        <g className="rays"><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6" /></g>
+      </svg>
+      <svg className="moon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z" /><circle cx="19" cy="4.5" r=".9" /><circle cx="21.5" cy="8" r=".6" />
+      </svg>
+    </button>
+  )
+}
+
+// the name "decodes" from random characters on load
+function Name({ first, last }) {
+  const ref = useRef(null)
+  useEffect(() => {
+    if (reduce) return
+    const glyphs = '01<>/{}[]=+*#$%&_', timers = []
+    ref.current.querySelectorAll('.part').forEach((part, pi) => {
+      part.querySelectorAll('.ch').forEach((s, i) => {
+        const final = s.textContent
+        let n = 0
+        const step = () => {
+          if (n++ < 7) { s.textContent = glyphs[Math.floor(Math.random() * glyphs.length)]; timers.push(setTimeout(step, 45)) }
+          else s.textContent = final
         }
-        .animate-scan { animation: scan 4s linear infinite; }
-
-        @keyframes fadeIn {
-          from { opacity: 0 }
-          to { opacity: 1 }
-        }
-        .animate-fadeIn { animation: fadeIn 1.2s ease-out; }
-
-        @keyframes slideUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-slideUp { animation: slideUp 1s ease-out; }
-      `}</style>
-    </div>
-  );
+        timers.push(setTimeout(step, 250 + pi * 220 + i * 55))
+      })
+    })
+    const spans = ref.current.querySelectorAll('.ch')
+    return () => { timers.forEach(clearTimeout); spans.forEach((s) => { s.textContent = s.dataset.c }) }
+  }, [])
+  const letters = (word) => word.split('').map((c, i) => <span className="ch" data-c={c} key={i}>{c}</span>)
+  return (
+    <h1 ref={ref} aria-label={`${first} ${last}`}>
+      <span className="part" aria-hidden="true">{letters(first)}</span>{' '}
+      <span className="part em" aria-hidden="true">{letters(last)}</span>
+    </h1>
+  )
 }
 
-function Section({ title, children }) {
+function Featured({ p }) {
   return (
-    <section className="animate-slideUp">
-      <h2 className="text-3xl font-bold text-purple-300 mb-4 font-mono">
-        {">"} {title}
-      </h2>
-      <div className="h-px w-full bg-gradient-to-r from-transparent via-purple-400/30 to-transparent mb-8" />
-      {children}
-    </section>
-  );
-}
-
-function Card({ children, className = "" }) {
-  return (
-    <div className="bg-white/5 border border-purple-400/20 rounded-xl p-6 hover:border-purple-400/40 transition">
-      {children}
-    </div>
-  );
-}
-
-function Project({ title, tech, children, link, git }) {
-  return (
-    <Card className="flex flex-col justify-between h-full">
-      <h3 className="text-2xl font-semibold flex items-center gap-2 mb-2">
-        <ChevronRight size={18} /> {title}
-      </h3>
-
-      {tech && (
-        <p className="text-sm text-purple-300 font-mono mb-4">{tech}</p>
-      )}
-
-      {children && (
-        <div className="flex-1 space-y-2 text-white/70 text-sm mb-4">
-          {children}
-        </div>
-      )}
-
-      {(link || git) && (
-        <div className="flex flex-wrap gap-4 mt-auto">
-          {link && (
-            
-              href={link}
-              target="_blank"
-              className="inline-flex items-center gap-1 text-pink-400 hover:translate-x-1 transition"
-            >
-              View live <ExternalLink size={14} />
-            </a>
-          )}
-          {git && (
-            
-              href={git}
-              target="_blank"
-              className="inline-flex items-center gap-1 text-pink-400 hover:translate-x-1 transition"
-            >
-              GitHub <ExternalLink size={14} />
-            </a>
-          )}
-        </div>
-      )}
-    </Card>
-  );
-}
-
-function CodingCard({ title, desc, link }) {
-  return (
-    <a href={link} target="_blank" className="group">
-      <Card>
-        <p className="text-xl font-semibold">{title}</p>
-        <p className="text-sm text-white/60 font-mono mt-1">{desc}</p>
-        <p className="mt-3 text-sm text-pink-400 font-mono group-hover:translate-x-1 transition">
-          View profile →
-        </p>
-      </Card>
+    <a className="feat" href={p.url} target="_blank" rel="noreferrer">
+      <span className="img">
+        <img src={p.image} alt={p.imageAlt} width="1400" height="788" loading="lazy" />
+        <span className="tag"><i />{p.tag}</span>
+      </span>
+      <span className="body">
+        <span className="k">{p.kicker}</span>
+        <h3>{p.name}</h3>
+        <p>{p.text}</p>
+        <span className="shelves">{p.shelves.map((s) => <span key={s}>{s}</span>)}</span>
+        <span className="stack">{p.stack.map((s) => <span key={s}>{s}</span>)}</span>
+      </span>
     </a>
-  );
+  )
 }
 
-function Cert({ title, meta }) {
+function ProjectRow({ p, n }) {
   return (
-    <li>
-      <span className="text-purple-300">{title}</span>
-      {meta && <span className="text-white/60"> — {meta}</span>}
-    </li>
-  );
+    <a className="row" href={p.url} target="_blank" rel="noreferrer">
+      <span className="n">{String(n).padStart(2, '0')}</span>
+      <h3>{p.name}<small>{p.label}</small></h3>
+      <span className="desc">
+        {p.text}
+        <span className="stack">{p.stack.map((s) => <span key={s}>{s}</span>)}</span>
+        {p.image && <img className="thumb" src={p.image} alt={p.imageAlt} width="720" height="480" loading="lazy" />}
+      </span>
+      <span className="metric"><b className={p.highlight ? 'p' : undefined}>{p.metric}</b><span>{p.metricLabel}</span></span>
+    </a>
+  )
+}
+
+function Contact() {
+  const [label, setLabel] = useState('copy')
+  function copy() {
+    if (!navigator.clipboard) { setLabel('select ↖'); return }
+    navigator.clipboard.writeText(links.email).then(
+      () => { setLabel('copied ✓'); setTimeout(() => setLabel('copy'), 1600) },
+      () => setLabel('select ↖'),
+    )
+  }
+  return (
+    <section className="contact" id="contact">
+      <h2 className="rv">Let&apos;s build <em>something.</em></h2>
+      <div className="mailrow rv" style={{ '--d': '120ms' }}>
+        <a href={`mailto:${links.email}`}>{links.email}</a>
+        <button className="copy" type="button" onClick={copy}>{label}</button>
+      </div>
+      <div className="socials rv" style={{ '--d': '200ms' }}>
+        <a href={links.linkedin} target="_blank" rel="noreferrer">LinkedIn ↗</a>
+        <a href={links.github} target="_blank" rel="noreferrer">GitHub ↗</a>
+        <a href={links.leetcode} target="_blank" rel="noreferrer">LeetCode ↗</a>
+      </div>
+    </section>
+  )
+}
+
+function StarIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 2l3 6 6 .9-4.5 4.4 1 6.2L12 16.6 6.5 19.5l1-6.2L3 8.9 9 8z" />
+    </svg>
+  )
+}
+
+// fade sections in as they scroll into view
+function useReveal() {
+  useEffect(() => {
+    const els = document.querySelectorAll('.rv')
+    if (reduce || !('IntersectionObserver' in window)) { els.forEach((el) => el.classList.add('in')); return }
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target) } })
+    }, { threshold: 0.12 })
+    els.forEach((el) => io.observe(el))
+    return () => io.disconnect()
+  }, [])
 }
