@@ -41,7 +41,7 @@ button { font: inherit; color: inherit; }
 /* background canvases */
 .city { position: absolute; top: 0; left: 0; width: 100%; z-index: 0; pointer-events: none; display: block; }
 .sky { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; transition: opacity .6s; }
-.dragon { position: fixed; left: 0; top: 0; width: 112px; aspect-ratio: 1040 / 880; z-index: 0; pointer-events: none; opacity: 0; transition: opacity 1s; will-change: transform; }
+.dragon { position: fixed; left: 0; top: 0; width: 112px; aspect-ratio: 1040 / 880; z-index: 2; pointer-events: none; opacity: 0; transition: opacity 1s; will-change: transform; }
 
 /* top bar */
 header.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-block: 16px; }
